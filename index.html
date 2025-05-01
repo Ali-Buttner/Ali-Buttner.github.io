@@ -1,85 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Arduino Web Serial</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 2em;
-      background-color: #f4f4f4;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1em;
-      margin: 10px 0;
-    }
-    #output {
-      background: #000;
-      color: #0f0;
-      padding: 1em;
-      font-family: monospace;
-      height: 300px;
-      overflow-y: scroll;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Arduino Uno Blink Uploader</title>
+  <script src="https://github.com/dbuezas/arduino-web-uploader/releases/download/v1.1.2/main.js"></script>
 </head>
 <body>
-  <h1>Arduino Web Serial</h1>
-  <button id="connect">Connect</button>
-  <button id="disconnect" disabled>Disconnect</button>
-  <div id="output"></div>
-
-  <script>
-    let port;
-    let reader;
-    let keepReading = true;
-
-    const connectButton = document.getElementById('connect');
-    const disconnectButton = document.getElementById('disconnect');
-    const output = document.getElementById('output');
-
-    function log(text) {
-      output.textContent += text + '\n';
-      output.scrollTop = output.scrollHeight;
-    }
-
-    connectButton.addEventListener('click', async () => {
-      try {
-        port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 9600 });
-        log("✅ Connected to port");
-
-        connectButton.disabled = true;
-        disconnectButton.disabled = false;
-
-        const decoder = new TextDecoderStream();
-        const inputDone = port.readable.pipeTo(decoder.writable);
-        const inputStream = decoder.readable;
-        reader = inputStream.getReader();
-
-        keepReading = true;
-        while (keepReading) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          if (value) log(value.trim());
-        }
-
-        reader.releaseLock();
-      } catch (err) {
-        log("❌ Error: " + err);
-      }
-    });
-
-    disconnectButton.addEventListener('click', async () => {
-      keepReading = false;
-      if (reader) reader.cancel();
-      if (port) await port.close();
-      log("🔌 Disconnected");
-
-      connectButton.disabled = false;
-      disconnectButton.disabled = true;
-    });
-  </script>
+  <h1>Upload Blink to Arduino Uno R3</h1>
+  <button
+    arduino-uploader
+    hex-href="blink.hex"
+    board="uno"
+  >
+    Upload Blink
+    <span class="upload-progress"></span>
+  </button>
 </body>
 </html>
